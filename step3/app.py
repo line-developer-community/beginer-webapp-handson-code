@@ -1,5 +1,5 @@
 # coding: utf-8
-import os 
+import os
 import sys
 import json
 from dotenv import load_dotenv
@@ -26,7 +26,7 @@ app = Flask(__name__)
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
-    
+
 if channel_secret is None:
     print('Specify LINE_CHANNEL_SECRET as environment variable.')
     sys.exit(1)
@@ -36,6 +36,7 @@ if channel_access_token is None:
 
 line_bot_api = LineBotApi(channel_access_token)
 
+
 def base64url_decode(target):
     rem = len(target) % 4
     if rem > 0:
@@ -43,9 +44,11 @@ def base64url_decode(target):
 
     return base64.urlsafe_b64decode(target)
 
+
 @app.route('/')
 def get():
     return "Hello world!"
+
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -58,14 +61,13 @@ def callback():
 
     # 署名検証
     hash = hmac.new(channel_secret.encode('utf-8'),
-        body.encode('utf-8'), hashlib.sha256).digest()
+                    body.encode('utf-8'), hashlib.sha256).digest()
     validation_signature = hmac.compare_digest(signature_decoded, hash)
     # 署名検証が通ったらリクエストボディの中からWebhookイベントのリストを取り出す
     if validation_signature:
         events = json.loads(body)['events']
     else:
         abort(400)
-
 
     # メッセージイベントでかつテキストメッセージである場合は受け取ったテキストをそのまま返信する(それ以外はスルー)
     for event in events:
@@ -81,5 +83,6 @@ def callback():
 
     return 'OK'
 
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host="0.0.0.0", port="5000")
